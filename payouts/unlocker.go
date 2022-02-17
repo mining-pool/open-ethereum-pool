@@ -29,10 +29,15 @@ type UnlockerConfig struct {
 }
 
 const minDepth = 16
-const byzantiumHardForkHeight = 4370000
 
+// https://github.com/ethereum/go-ethereum/blob/master/core/forkid/forkid_test.go#L48
+const byzantiumHardForkHeight = 4370000
+const constantinopleHardForkHeight = 7280000
+
+// https://github.com/ethereum/go-ethereum/blob/master/consensus/ethash/consensus.go#L42
 var homesteadReward = math.MustParseBig256("5000000000000000000")
 var byzantiumReward = math.MustParseBig256("3000000000000000000")
+var constantinopleBlockReward = big.NewInt(2e+18)
 
 // Donate 10% from pool fees to developers
 const donationFee = 10.0
@@ -203,12 +208,15 @@ func matchCandidate(block *rpc.GetBlockReply, candidate *storage.BlockData) bool
 	return false
 }
 
+// block reward should follow accumulateRewards in
+// https://github.com/ethereum/go-ethereum/blob/master/consensus/ethash/consensus.go#L645
 func (u *BlockUnlocker) handleBlock(block *rpc.GetBlockReply, candidate *storage.BlockData) error {
 	correctHeight, err := strconv.ParseInt(strings.Replace(block.Number, "0x", "", -1), 16, 64)
 	if err != nil {
 		return err
 	}
 	candidate.Height = correctHeight
+
 	reward := getConstReward(candidate.Height)
 
 	// Add TX fees
@@ -216,6 +224,7 @@ func (u *BlockUnlocker) handleBlock(block *rpc.GetBlockReply, candidate *storage
 	if err != nil {
 		return fmt.Errorf("Error while fetching TX receipt: %v", err)
 	}
+
 	if u.config.KeepTxFees {
 		candidate.ExtraReward = extraTxReward
 	} else {
@@ -502,9 +511,14 @@ func weiToShannonInt64(wei *big.Rat) int64 {
 }
 
 func getConstReward(height int64) *big.Int {
+	if height >= constantinopleHardForkHeight {
+		return new(big.Int).Set(constantinopleBlockReward)
+	}
+
 	if height >= byzantiumHardForkHeight {
 		return new(big.Int).Set(byzantiumReward)
 	}
+
 	return new(big.Int).Set(homesteadReward)
 }
 
