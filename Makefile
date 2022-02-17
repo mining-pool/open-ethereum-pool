@@ -4,13 +4,13 @@
 
 .PHONY: all test clean
 
-GOBIN = build/bin
+GOBIN = ${PWD}/bin
 
 all:
-	build/env.sh go get -v ./...
+	go get -v ./...
 
 test: all
-	build/env.sh go test -v ./...
+	go test -v ./...
 
-clean:
-	rm -fr build/_workspace/pkg/ $(GOBIN)/*
+build:
+	GOBIN=${GOBIN} go install .

@@ -14,7 +14,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/sammy007/open-ethereum-pool/util"
+	"github.com/mining-pool/open-ethereum-pool/util"
 )
 
 type RPCClient struct {
@@ -177,7 +177,7 @@ func (r *RPCClient) GetBalance(address string) (*big.Int, error) {
 
 func (r *RPCClient) Sign(from string, s string) (string, error) {
 	hash := sha256.Sum256([]byte(s))
-	rpcResp, err := r.doPost(r.Url, "eth_sign", []string{from, common.ToHex(hash[:])})
+	rpcResp, err := r.doPost(r.Url, "eth_sign", []string{from, common.Bytes2Hex(hash[:])})
 	var reply string
 	if err != nil {
 		return reply, err
