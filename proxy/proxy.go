@@ -83,40 +83,34 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 
 	go func() {
 		for {
-			select {
-			case <-refreshTimer.C:
-				proxy.fetchBlockTemplate()
-				refreshTimer.Reset(refreshIntv)
-			}
+			<-refreshTimer.C
+			proxy.fetchBlockTemplate()
+			refreshTimer.Reset(refreshIntv)
 		}
 	}()
 
 	go func() {
 		for {
-			select {
-			case <-checkTimer.C:
-				proxy.checkUpstreams()
-				checkTimer.Reset(checkIntv)
-			}
+			<-checkTimer.C
+			proxy.checkUpstreams()
+			checkTimer.Reset(checkIntv)
 		}
 	}()
 
 	go func() {
 		for {
-			select {
-			case <-stateUpdateTimer.C:
-				t := proxy.currentBlockTemplate()
-				if t != nil {
-					err := backend.WriteNodeState(cfg.Name, t.Height, t.Difficulty)
-					if err != nil {
-						log.Printf("Failed to write node state to backend: %v", err)
-						proxy.markSick()
-					} else {
-						proxy.markOk()
-					}
+			<-stateUpdateTimer.C
+			t := proxy.currentBlockTemplate()
+			if t != nil {
+				err := backend.WriteNodeState(cfg.Name, t.Height, t.Difficulty)
+				if err != nil {
+					log.Printf("Failed to write node state to backend: %v", err)
+					proxy.markSick()
+				} else {
+					proxy.markOk()
 				}
-				stateUpdateTimer.Reset(stateUpdateIntv)
 			}
+			stateUpdateTimer.Reset(stateUpdateIntv)
 		}
 	}()
 
