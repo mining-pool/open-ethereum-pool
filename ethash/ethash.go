@@ -87,14 +87,14 @@ func (cache *cache) generate() {
 	cache.gen.Do(func() {
 		started := time.Now()
 		seedHash := makeSeedHash(cache.epoch)
-		log.Debug(fmt.Sprintf("Generating cache for epoch %d (%x)", cache.epoch, seedHash))
+		log.Debug("Generating cache for epoch %d (%x)", cache.epoch, seedHash)
 		size := C.ethash_get_cachesize(C.uint64_t(cache.epoch * epochLength))
 		if cache.test {
 			size = cacheSizeForTesting
 		}
 		cache.ptr = C.ethash_light_new_internal(size, (*C.ethash_h256_t)(unsafe.Pointer(&seedHash[0])))
 		runtime.SetFinalizer(cache, freeCache)
-		log.Debug(fmt.Sprintf("Done generating cache for epoch %d, it took %v", cache.epoch, time.Since(started)))
+		log.Debug("Done generating cache for epoch %d, it took %v", cache.epoch, time.Since(started))
 	})
 }
 
@@ -130,7 +130,7 @@ func (l *Light) Verify(block Block) bool {
 	// to prevent DOS attacks.
 	blockNum := block.NumberU64()
 	if blockNum >= epochLength*2048 {
-		log.Debug(fmt.Sprintf("block number %d too high, limit is %d", epochLength*2048))
+		log.Debug("block number %d too high, limit is %d", blockNum, epochLength*2048)
 		return false
 	}
 
@@ -196,22 +196,22 @@ func (l *Light) getCache(blockNum uint64) *cache {
 					evict = cache
 				}
 			}
-			log.Debug(fmt.Sprintf("Evicting DAG for epoch %d in favour of epoch %d", evict.epoch, epoch))
+			log.Debug("Evicting DAG for epoch %d in favour of epoch %d", evict.epoch, epoch)
 			delete(l.caches, evict.epoch)
 		}
 		// If we have the new DAG pre-generated, use that, otherwise create a new one
 		if l.future != nil && l.future.epoch == epoch {
-			log.Debug(fmt.Sprintf("Using pre-generated DAG for epoch %d", epoch))
+			log.Debug("Using pre-generated DAG for epoch %d", epoch)
 			c, l.future = l.future, nil
 		} else {
-			log.Debug(fmt.Sprintf("No pre-generated DAG available, creating new for epoch %d", epoch))
+			log.Debug("No pre-generated DAG available, creating new for epoch %d", epoch)
 			c = &cache{epoch: epoch, test: l.test}
 		}
 		l.caches[epoch] = c
 
 		// If we just used up the future cache, or need a refresh, regenerate
 		if l.future == nil || l.future.epoch <= epoch {
-			log.Debug(fmt.Sprintf("Pre-generating DAG for epoch %d", epoch+1))
+			log.Debug("Pre-generating DAG for epoch %d", epoch+1)
 			l.future = &cache{epoch: epoch + 1, test: l.test}
 			go l.future.generate()
 		}
@@ -254,7 +254,7 @@ func (d *dag) generate() {
 		if d.dir == "" {
 			d.dir = DefaultDir
 		}
-		log.Info(fmt.Sprintf("Generating DAG for epoch %d (size %d) (%x)", d.epoch, dagSize, seedHash))
+		log.Info("Generating DAG for epoch %d (size %d) (%x)", d.epoch, dagSize, seedHash)
 		// Generate a temporary cache.
 		// TODO: this could share the cache with Light
 		cache := C.ethash_light_new_internal(cacheSize, (*C.ethash_h256_t)(unsafe.Pointer(&seedHash[0])))
@@ -271,7 +271,7 @@ func (d *dag) generate() {
 			panic("ethash_full_new IO or memory error")
 		}
 		runtime.SetFinalizer(d, freeDAG)
-		log.Info(fmt.Sprintf("Done generating DAG for epoch %d, it took %v", d.epoch, time.Since(started)))
+		log.Info("Done generating DAG for epoch %d, it took %v", d.epoch, time.Since(started))
 	})
 }
 
@@ -286,7 +286,7 @@ func (d *dag) Ptr() unsafe.Pointer {
 
 //export ethashGoCallback
 func ethashGoCallback(percent C.unsigned) C.int {
-	log.Info(fmt.Sprintf("Generating DAG: %d%%", percent))
+	log.Info("Generating DAG: %d%%", percent)
 	return 0
 }
 
