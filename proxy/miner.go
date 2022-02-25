@@ -63,7 +63,7 @@ func (s *ProxyServer) processShare(login, id, ip string, t *BlockTemplate, param
 			} else {
 				log.Printf("Inserted block %v to backend", h.height)
 			}
-			log.Printf("Block found by miner %v@%v at height %d", login, ip, h.height)
+			log.Printf("🔨 Block found by miner %v@%v at height %d", login, ip, h.height)
 		}
 	} else {
 		exist, err := s.backend.WriteShare(login, id, params, shareDiff, h.height, s.hashrateExpiration)

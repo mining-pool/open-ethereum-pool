@@ -51,12 +51,12 @@ func (s *ProxyServer) fetchBlockTemplate() {
 	t := s.currentBlockTemplate()
 	pendingReply, height, diff, err := s.fetchPendingBlock()
 	if err != nil {
-		log.Printf("Error while refreshing pending block on %s: %s", rpc.Name, err)
+		log.Printf("Error while refreshing pending block on %s daemon: %s", rpc.Name, err)
 		return
 	}
 	reply, err := rpc.GetWork()
 	if err != nil {
-		log.Printf("Error while refreshing block template on %s: %s", rpc.Name, err)
+		log.Printf("Error while refreshing block template on %s daemon: %s", rpc.Name, err)
 		return
 	}
 	// No need to update, we have fresh job
@@ -100,7 +100,7 @@ func (s *ProxyServer) fetchPendingBlock() (*rpc.GetBlockReplyPart, uint64, int64
 	rpc := s.rpc()
 	reply, err := rpc.GetPendingBlock()
 	if err != nil {
-		log.Printf("Error while refreshing pending block on %s: %s", rpc.Name, err)
+		log.Printf("Error while refreshing pending block on %s daemon: %s", rpc.Name, err)
 		return nil, 0, 0, err
 	}
 	blockNumber, err := strconv.ParseUint(strings.Replace(reply.Number, "0x", "", -1), 16, 64)
