@@ -244,8 +244,6 @@ otherwise you will get errors on start because of JSON comments.**
     "poolFee": 1.0,
     // Pool fees beneficiary address (leave it blank to disable fee withdrawals)
     "poolFeeAddress": "",
-    // Donate 10% from pool fees to developers
-    "donate": true,
     // Unlock only if this number of blocks mined back
     "depth": 120,
     // Simply don't touch this option
@@ -314,11 +312,3 @@ Made by mining-pool. Licensed under GPLv3.
 #### Contributors
 
 [Alex Leverington](https://github.com/subtly)
-
-### Donations
-
-ETH/ETC: 0xb85150eb365e7df0941f0cf08235f987ba91506a
-
-![](https://cdn.pbrd.co/images/GP5tI1D.png)
-
-Highly appreciated.
